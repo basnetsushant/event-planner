@@ -56,7 +56,7 @@ export default function Navbar({ session }: { session: Session | null }) {
             ) : (
               <div className="flex items-center space-x-2">
                 <button
-                  className="bg-primary text-background px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors"
+                  className="bg-primary text-background px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors cursor-pointer"
                   // href="/login"
                   onClick={() => login()}
                 >
@@ -96,27 +96,40 @@ export default function Navbar({ session }: { session: Session | null }) {
               >
                 Events
               </Link>
-
-              <Link
-                href="/events/create"
-                className="text-foreground hover:text-primary px-3 py-2 rounded-md  text-base block font-medium transition-colors"
-              >
-                Create Event
-              </Link>
-              <Link
-                href="/dashboard"
-                className="text-foreground hover:text-primary px-3 py-2 rounded-md text-base block font-medium transition-colors"
-              >
-                Dashboard
-              </Link>
+              {session && (
+                <div>
+                  <Link
+                    href="/events/create"
+                    className="text-foreground hover:text-primary px-3 py-2 rounded-md  text-base block font-medium transition-colors"
+                  >
+                    Create Event
+                  </Link>
+                  <Link
+                    href="/dashboard"
+                    className="text-foreground hover:text-primary px-3 py-2 rounded-md text-base block font-medium transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                </div>
+              )}
 
               <div className="flex items-center space-x-2">
-                <Link
-                  className="bg-primary text-background px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors"
-                  href="/login"
-                >
-                  Sign in with Github
-                </Link>
+                {session ? (
+                  <button
+                    onClick={() => logout()}
+                    className="bg-primary text-background px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors cursor-pointer"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <button
+                    className="bg-primary text-background px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors cursor-pointer"
+                    // href="/login"
+                    onClick={() => login()}
+                  >
+                    Sign in with Github
+                  </button>
+                )}
               </div>
             </div>
           </div>
