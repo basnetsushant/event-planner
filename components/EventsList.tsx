@@ -2,6 +2,7 @@
 
 import { format } from "date-fns";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface Event {
   id: string;
@@ -18,7 +19,7 @@ interface Event {
 
 interface EventsListProps {
   events: Event[];
-  searchParams: null;
+  searchParams: { search?: string; filter?: string };
   isAuthenticated: boolean;
 }
 
@@ -27,11 +28,51 @@ export default function EventsList({
   searchParams,
   isAuthenticated,
 }: EventsListProps) {
-  events = [];
+  const router = useRouter();
+  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const search = formData.get("search") as string;
+    const filter = formData.get("filter") as string;
+
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (filter) params.set("filter", filter);
+    router.push(`/events?${params.toString()}`);
+  }
+
   return (
     <div className="space-y-6">
       {/* search and filter */}
-      <div></div>
+      <div className="card p-6">
+        <form
+          onSubmit={handleSearch}
+          className="flex flex-wrap gap-4"
+        >
+          <div className="flex-1 min-w-64">
+            <input
+              type="text"
+              name="search"
+              placeholder="search events.."
+              className="input-field"
+            />
+          </div>
+          <select
+            name="filter"
+            className="input-field w-auto"
+          >
+            <option value="">All Events</option>
+            <option value="upcoming">Upcoming Events</option>
+            <option value="past">Past Events</option>
+          </select>
+          <button
+            type="submit"
+            className="btn-primary"
+          >
+            Filter
+          </button>
+        </form>
+      </div>
       {/* events grid */}
       {events.length === 0 && (
         <div className="text-center py-12 text-muted text-md">
