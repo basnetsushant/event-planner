@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import z from "zod";
 import { prisma } from "./prisma";
 import { revalidateTag } from "next/cache";
+import { RSVPStatus } from "./models";
 
 const eventSchema = z.object({
   title: z.string().min(1, "Title is required."),
@@ -76,10 +77,66 @@ export async function deleteEvent(eventId: string) {
     await prisma.event.delete({
       where: { id: eventId },
     });
-    revalidateTag("events");
+    revalidateTag("events", "max");
     return { success: true };
   } catch (error) {
     console.error(error);
     return { success: false, error: "Failed to delete the event." };
+  }
+}
+
+export async function rsvpToEvent(eventId: string, status: RSVPStatus) {
+  const session = await auth();
+  try {
+    if (!session?.user?.id) {
+      return { success: false, error: "Not Authenticated" };
+    }
+
+    const existingEvent = await prisma.event.findUnique({
+      where: { id: eventId },
+    });
+
+    if (!existingEvent) {
+      return { success: false, error: "Event not found" };
+    }
+    if (!existingEvent.isPublic) {
+      return { success: false, error: "Event is not public." };
+    }
+    const existingRSVP = await prisma.rSVP.findUnique({
+      where: {
+        userId_eventId: {
+          userId: session?.user?.id,
+          eventId: eventId,
+        },
+      },
+    });
+    if (existingRSVP) {
+      await prisma.rSVP.update({
+        where: {
+          userId_eventId: {
+            userId: session?.user?.id,
+            eventId: eventId,
+          },
+        },
+        data: {
+          status,
+        },
+      });
+    } else {
+      await prisma.rSVP.create({
+        data: {
+          userId: session?.user?.id,
+          eventId,
+          status,
+        },
+      });
+    }
+    revalidateTag("events", "max");
+    revalidateTag(`event-${eventId}`, "max");
+    revalidateTag("rsvps", "max");
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Failed to RSVP" };
   }
 }

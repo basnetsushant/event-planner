@@ -1,6 +1,6 @@
 "use client";
 
-import createEvent from "@/lib/event-actions";
+import { createEvent } from "@/lib/event-actions";
 import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 

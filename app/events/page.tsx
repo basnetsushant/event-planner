@@ -16,7 +16,7 @@ export default async function EventsPage({
 
   const eventsResponse = await fetch(
     `http://localhost:3000/api/events?${params.toString()}`,
-    { cache: "no-cache" },
+    { next: { tags: ["events"] } },
   );
   const data = eventsResponse.ok ? await eventsResponse.json() : {};
   const events = data.events ?? [];
