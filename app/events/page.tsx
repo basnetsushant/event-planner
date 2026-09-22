@@ -16,10 +16,10 @@ export default async function EventsPage({
 
   const eventsResponse = await fetch(
     `http://localhost:3000/api/events?${params.toString()}`,
+    { cache: "no-cache" },
   );
   const data = eventsResponse.ok ? await eventsResponse.json() : {};
   const events = data.events ?? [];
-  console.log(events);
 
   return (
     <div className="space-y-8">

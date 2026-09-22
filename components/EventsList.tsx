@@ -1,21 +1,9 @@
 "use client";
 
+import { Event } from "@/lib/models";
 import { format } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: Date;
-  location: string;
-  maxAttendees: number | null;
-  user: {
-    name: string | null;
-    email: string;
-  };
-}
 
 interface EventsListProps {
   events: Event[];

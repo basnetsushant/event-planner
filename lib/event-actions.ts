@@ -2,6 +2,7 @@
 import { auth } from "@/auth";
 import z from "zod";
 import { prisma } from "./prisma";
+import { revalidateTag } from "next/cache";
 
 const eventSchema = z.object({
   title: z.string().min(1, "Title is required."),
@@ -12,7 +13,7 @@ const eventSchema = z.object({
   isPublic: z.string().optional(),
 });
 
-export default async function createEvent(_: any, formData: FormData) {
+export async function createEvent(_: any, formData: FormData) {
   try {
     const session = await auth();
 
@@ -52,5 +53,33 @@ export default async function createEvent(_: any, formData: FormData) {
       return { success: false, error: error.issues[0].message };
     }
     return { success: false, error: "Failed to create event.", eventId: null };
+  }
+}
+
+export async function deleteEvent(eventId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Not Authenticated" };
+    }
+    const existingEvent = await prisma.event.findUnique({
+      where: { id: eventId },
+    });
+    if (!existingEvent) {
+      return { success: false, error: "Event not found" };
+    }
+    const isOwner = session.user.id === existingEvent.userId;
+
+    if (!isOwner) {
+      return { success: false, error: "Not autherized to delete." };
+    }
+    await prisma.event.delete({
+      where: { id: eventId },
+    });
+    revalidateTag("events");
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Failed to delete the event." };
   }
 }
