@@ -48,6 +48,7 @@ export async function createEvent(_: any, formData: FormData) {
       },
     });
 
+    revalidateTag("events", "max");
     return { success: true, eventId: event.id };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -78,6 +79,7 @@ export async function deleteEvent(eventId: string) {
       where: { id: eventId },
     });
     revalidateTag("events", "max");
+    revalidateTag(`event-${eventId}`, "max");
     return { success: true };
   } catch (error) {
     console.error(error);
@@ -133,7 +135,6 @@ export async function rsvpToEvent(eventId: string, status: RSVPStatus) {
     }
     revalidateTag("events", "max");
     revalidateTag(`event-${eventId}`, "max");
-    revalidateTag("rsvps", "max");
     return { success: true };
   } catch (error) {
     console.error(error);

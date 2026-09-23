@@ -1,8 +1,9 @@
 import { auth } from "@/auth";
 import EventActions from "@/components/EventActions";
 import RSVPButtons from "@/components/RSVPButtons";
-import { Event } from "@/lib/models";
+import { Event, RSVPStatus } from "@/lib/models";
 import { formatDate } from "date-fns";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export default async function EventPage({
@@ -23,8 +24,23 @@ export default async function EventPage({
   }
 
   const event = (await eventResponse.json()) as Event;
+
+  let currentRSVP: RSVPStatus | undefined;
+
+  if (session?.user?.id) {
+    const userRSVP = event.rsvps.find(
+      (rsvp) => rsvp.userId === session?.user?.id,
+    );
+    currentRSVP = userRSVP?.status;
+  }
+
   const isOwner = session?.user?.id === event.userId;
   const isPast = new Date(event.date) < new Date();
+  const goingRSPVs = event.rsvps.filter((rsvp) => rsvp.status === "GOING");
+  const notGoingRSPVs = event.rsvps.filter(
+    (rsvp) => rsvp.status === "NOT_GOING",
+  );
+  const maybeRSPVs = event.rsvps.filter((rsvp) => rsvp.status === "MAYBE");
 
   console.log(event);
 
@@ -134,16 +150,16 @@ export default async function EventPage({
                 </svg>
 
                 <span className="text-foreground">
-                  attending / {event.maxAttendees} max
+                  {event._count.rsvps} attending / {event.maxAttendees} max
                 </span>
               </div>
             )}
           </div>
 
-          {true && (
+          {!isPast && event.isPublic && (
             <RSVPButtons
               eventId={event.id}
-              currentRSVP="GOING"
+              currentRSVP={currentRSVP}
             />
           )}
           {isPast && (
@@ -157,6 +173,80 @@ export default async function EventPage({
             </div>
           )}
         </div>
+      </div>
+      {event.isPublic && event.rsvps.length > 0 && (
+        <div className="card p-8">
+          <h2 className="text-2xl font-bold text-foreground mb-6">Attendees</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {goingRSPVs.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-green-400 mb-3">
+                  Going ({goingRSPVs.length})
+                </h3>
+
+                <div className="space-y-2">
+                  {goingRSPVs.map((rsvp, key) => (
+                    <div
+                      key={key}
+                      className="flex items-center"
+                    >
+                      <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                      <span className="text-foreground">{rsvp.user.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {maybeRSPVs.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-yellow-400 mb-3">
+                  Maybe ({maybeRSPVs.length})
+                </h3>
+
+                <div className="space-y-2">
+                  {maybeRSPVs.map((rsvp, key) => (
+                    <div
+                      key={key}
+                      className="flex items-center"
+                    >
+                      <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
+                      <span className="text-foreground">{rsvp.user.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {notGoingRSPVs.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-red-400 mb-3">
+                  Not Going ({notGoingRSPVs.length})
+                </h3>
+
+                <div className="space-y-2">
+                  {notGoingRSPVs.map((rsvp, key) => (
+                    <div
+                      key={key}
+                      className="flex items-center"
+                    >
+                      <div className="w-2 h-2 bg-red-400 rounded-full mr-2"></div>
+                      <span className="text-foreground">{rsvp.user.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="text-center">
+        <Link
+          href={"/events"}
+          className="btn-secondary"
+        >
+          Back to Events
+        </Link>
       </div>
     </div>
   );

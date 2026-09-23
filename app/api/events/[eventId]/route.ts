@@ -13,7 +13,19 @@ export async function GET(
         id: eventId,
       },
       include: {
-        user: { select: { name: true, email: true } },
+        user: {
+          select: { name: true, email: true },
+        },
+        rsvps: {
+          include: {
+            user: {
+              select: { name: true, email: true },
+            },
+          },
+        },
+        _count: {
+          select: { rsvps: true },
+        },
       },
     });
     if (!event) {

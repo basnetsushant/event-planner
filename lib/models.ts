@@ -11,6 +11,17 @@ export interface Event {
     name: string | null;
     email: string | null;
   };
+  rsvps: EventRSVP[];
+  _count: {
+    rsvps: number;
+  };
 }
 
+interface EventRSVP {
+  userId: string;
+  status: RSVPStatus;
+  user: {
+    name: string;
+  };
+}
 export type RSVPStatus = "GOING" | "NOT_GOING" | "MAYBE";
