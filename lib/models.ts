@@ -17,11 +17,12 @@ export interface Event {
   };
 }
 
-interface EventRSVP {
+export interface EventRSVP {
   userId: string;
   status: RSVPStatus;
   user: {
     name: string;
   };
+  event?: Event;
 }
 export type RSVPStatus = "GOING" | "NOT_GOING" | "MAYBE";
