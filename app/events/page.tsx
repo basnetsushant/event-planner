@@ -15,7 +15,8 @@ export default async function EventsPage({
   if (sp.filter) params.set("filter", sp.filter);
 
   const eventsResponse = await fetch(
-    `http://localhost:3000/api/events?${params.toString()}`,
+    `${process.env.NEXT_PUBLIC_APP_URL}/api/events?${params.toString()}`,
+
     { next: { tags: ["events"] } },
   );
   const data = eventsResponse.ok ? await eventsResponse.json() : {};
